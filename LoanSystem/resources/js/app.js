@@ -1,9 +1,10 @@
 // Jquery
-var $ = require("jquery")(window);
+import $ from "jquery";
+window.$ = window.jQuery = $;
 
 // Bootsrap
-require('./bootstrap');
+import './bootstrap';
 
 // Datatables 
-require( 'datatables.net-bs4' )();
+import 'datatables.net-bs4';
 

@@ -16,9 +16,9 @@ class Loans extends Migration
         //
         Schema::create('loans', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->decimal('loan_amount', 21, 6);
-            $table->integer('loan_term');
-            $table->float('interest_rate', 8, 2);
+            $table->decimal('loan_amount', 21, 6)->default('0');
+            $table->integer('loan_term')->default('0');
+            $table->float('interest_rate', 8, 2)->default('0');
             $table->date('start_date');
             $table->timestamps();
         });

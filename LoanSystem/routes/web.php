@@ -11,4 +11,8 @@
 |
  */
 
-Route::get('/', 'LoanController@store');
+Route::get('/', 'LoanController@index');
+Route::post('/create-new-loan', 'LoanController@store');
+Route::get('/create-new-loan', 'LoanController@create');
+
+Route::post('/loan-list', 'LoanController@list');

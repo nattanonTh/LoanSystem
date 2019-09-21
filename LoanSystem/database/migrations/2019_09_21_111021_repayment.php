@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class LoanDetails extends Migration
+class Repayment extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,7 @@ class LoanDetails extends Migration
      */
     public function up()
     {
-        //
-        Schema::create('loan_details', function (Blueprint $table) {
+        Schema::create('repayment', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('payment_no');
             $table->date('date');
@@ -35,6 +34,6 @@ class LoanDetails extends Migration
     public function down()
     {
         //
-        Schema::dropIfExists('loan_details');
+        Schema::dropIfExists('repayment');
     }
 }

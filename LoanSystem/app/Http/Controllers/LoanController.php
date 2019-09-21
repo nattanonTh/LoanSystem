@@ -2,11 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateLoan;
 use App\Loan;
+use App\Repayment;
 use Illuminate\Http\Request;
+use Libraries\LoanCalculation;
 
 class LoanController extends Controller
 {
+    private $loan;
+    private $loanCalculation;
+
+    public function __construct()
+    {
+        $this->loanCalculation = new LoanCalculation();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -15,6 +26,7 @@ class LoanController extends Controller
     public function index()
     {
         //
+        return view('loans.loan_list');
     }
 
     /**
@@ -25,6 +37,7 @@ class LoanController extends Controller
     public function create()
     {
         //
+        return view('loans.loan_create');
     }
 
     /**
@@ -33,9 +46,32 @@ class LoanController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateLoan $request)
     {
-        //
+        $validated = $request->validated();
+
+        $loanData = [
+            'loan_amount' => $validated['input-loan-amount'],
+            'loan_term' => $validated['input-loan-term'],
+            'interest_rate' => $validated['input-interest-rate'],
+            'start_date' => date("Y-m-d", strtotime('1-' . $validated['input-month'] . '-' . $validated['input-year'])),
+        ];
+
+        // Create new loan and
+        $loanData = Loan::create($loanData);
+
+        // set loan for calculation class
+        $this->loanCalculation->setLoan($loanData);
+
+        // generate repayment list
+        $this->loanCalculation->generateReplaymentSchedule();
+
+        // get repayment list
+        $repaymentList = $this->loanCalculation->getRepaymentList();
+
+        foreach ($repaymentList as $replayment) {
+            Repayment::create((array) $replayment);
+        }
     }
 
     /**
@@ -81,5 +117,11 @@ class LoanController extends Controller
     public function destroy(Loan $loan)
     {
         //
+    }
+
+    // loan list for datatable
+    function list() {
+        //
+        return Loan::getLoanListDataTable();
     }
 }
