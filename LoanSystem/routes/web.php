@@ -16,6 +16,9 @@ Route::get('/', 'LoanController@index');
 
 // Details
 Route::get('/loan/{loan}', 'LoanController@show');
+// Delete
+Route::get('/loan/delete/{loan}', 'LoanController@destroy');
+
 
 // Edit
 Route::get('/loan/edit/{loan}', 'LoanController@edit');

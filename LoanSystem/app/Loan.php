@@ -25,6 +25,11 @@ class Loan extends Model
         return $this->hasMany('App\Repayment');
     }
 
+    public function getIntegerLoanAmountAttribute()
+    {
+        return (int) $this->loan_amount;
+    }
+
     public function getShowLoanAmountAttribute()
     {
         return number_format($this->loan_amount, '2');

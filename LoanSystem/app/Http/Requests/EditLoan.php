@@ -24,11 +24,11 @@ class EditLoan extends FormRequest
     public function rules()
     {
         return [
-            'input-loan-amount' => ['required', 'numeric', 'min:1'],
-            'input-loan-term' => ['required', 'integer', 'min:1'],
-            'input-interest-rate' => ['required', 'numeric', 'between:00.00,100.00'],
+            'input-loan-amount' => ['required', 'integer', 'between:1000,100000000'],
+            'input-loan-term' => ['required', 'integer', 'between:1,50'],
+            'input-interest-rate' => ['required', 'numeric', 'between:00.00,36.00'],
             'input-month' => ['required', 'integer', 'between:1,12'],
-            'input-year' => ['required', 'string', 'min:1'],
+            'input-year' => ['required', 'integer', 'between:2017,2050'],
         ];
     }
 

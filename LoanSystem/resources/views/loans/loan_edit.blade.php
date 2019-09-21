@@ -13,7 +13,7 @@
                 <div class="col-sm-10">
                     <div class="input-group mb-2">
                         <input type="number" class="form-control" name="input-loan-amount" id="input-loan-amount"
-                            placeholder="Loan Amount" min="1" value="{{ $loan->loan_amount }}" required>
+                            placeholder="Loan Amount" min="1" value="{{ $loan->integerLoanAmount }}" required>
                         <div class="input-group-prepend">
                             <div class="input-group-text">฿</div>
                         </div>

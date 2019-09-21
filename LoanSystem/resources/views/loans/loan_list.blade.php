@@ -55,10 +55,17 @@
                     data: "id",
                     name: "id",
                     "render": function (data, type, row, meta) {
-                        return '<div class="btn-group"><a class="btn btn-primary" href="loan/' + data + '">View</a><a href="loan/edit/' + data + '" class="btn btn-success">Edit</a><a href="loan/delete/' + data + '"  class="btn btn-danger">Delete</a></div>'
+                        return '<div class="btn-group"><a class="btn btn-primary" href="loan/' + data + '">View</a><a href="loan/edit/' + data + '" class="btn btn-success">Edit</a><a href="loan/delete/' + data + '"  class="btn btn-danger deleteBtn">Delete</a></div>'
                     }
                 }
             ],
+        });
+
+        $(document).on('click', '.deleteBtn', function(e) {
+            e.preventDefault();
+            if (confirm('Please confirm to delete loan')) {
+                location = $(this).attr('href');
+            }
         });
     });
 

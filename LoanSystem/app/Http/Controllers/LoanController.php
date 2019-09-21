@@ -86,6 +86,7 @@ class LoanController extends Controller
 
         $loan->save();
 
+        // remove all repayment record 
         Repayment::removeByLoanId($loan->id);
 
         // set loan for calculation class
@@ -109,7 +110,13 @@ class LoanController extends Controller
 
     public function destroy(Loan $loan)
     {
-        //
+        // remove all repayment record 
+        Repayment::removeByLoanId($loan->id);
+
+        // delete loan
+        $loan->delete();
+
+        return redirect('/')->with('success', 'the loan has deleted successfully.');
     }
 
 }
