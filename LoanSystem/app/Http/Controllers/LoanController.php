@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateLoan;
+use App\Http\Requests\EditLoan;
 use App\Loan;
 use App\Repayment;
-use Illuminate\Http\Request;
 use Libraries\LoanCalculation;
 
 class LoanController extends Controller
@@ -18,34 +18,18 @@ class LoanController extends Controller
         $this->loanCalculation = new LoanCalculation();
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         //
-        return view('loans.loan_list');
+        return view('loans.loan_list', ['loans' => Loan::all()]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         //
         return view('loans.loan_create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(CreateLoan $request)
     {
         $validated = $request->validated();
@@ -69,59 +53,63 @@ class LoanController extends Controller
         // get repayment list
         $repaymentList = $this->loanCalculation->getRepaymentList();
 
-        foreach ($repaymentList as $replayment) {
-            Repayment::create((array) $replayment);
+        if (!empty($repaymentList)) {
+            // insert repayments
+            foreach ($repaymentList as $replayment) {
+                Repayment::create((array) $replayment);
+            }
         }
+
+        return redirect('/loan/' . $loanData->id)->with('success', 'the loan has created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Loan  $loan
-     * @return \Illuminate\Http\Response
-     */
     public function show(Loan $loan)
     {
         //
+        return view('loans.loan_details', ['loan' => $loan, 'repayments' => $loan->repayments]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Loan  $loan
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Loan $loan)
     {
         //
+        return view('loans.loan_edit', compact('loan'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Loan  $loan
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Loan $loan)
+    public function update(EditLoan $request, Loan $loan)
     {
-        //
+        $validated = $request->validated();
+
+        $loan->loan_amount = $validated['input-loan-amount'];
+        $loan->loan_term = $validated['input-loan-term'];
+        $loan->interest_rate = $validated['input-interest-rate'];
+        $loan->start_date = date("Y-m-d", strtotime('1-' . $validated['input-month'] . '-' . $validated['input-year']));
+
+        $loan->save();
+
+        Repayment::removeByLoanId($loan->id);
+
+        // set loan for calculation class
+        $this->loanCalculation->setLoan($loan);
+
+        // generate repayment list
+        $this->loanCalculation->generateReplaymentSchedule();
+
+        // get repayment list
+        $repaymentList = $this->loanCalculation->getRepaymentList();
+
+        if (!empty($repaymentList)) {
+            // insert repayments
+            foreach ($repaymentList as $replayment) {
+                Repayment::create((array) $replayment);
+            }
+        }
+
+        return redirect('/loan/' . $loan->id)->with('success', 'the loan has updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Loan  $loan
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Loan $loan)
     {
         //
     }
 
-    // loan list for datatable
-    function list() {
-        //
-        return Loan::getLoanListDataTable();
-    }
 }

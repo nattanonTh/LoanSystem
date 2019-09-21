@@ -19,4 +19,34 @@ class Loan extends Model
         $list = Loan::all();
         return datatables()->of($list)->make(true);
     }
+
+    public function repayments()
+    {
+        return $this->hasMany('App\Repayment');
+    }
+
+    public function getShowLoanAmountAttribute()
+    {
+        return number_format($this->loan_amount, '2');
+    }
+
+    public function getShowLoanTermAttribute()
+    {
+        return number_format($this->loan_term);
+    }
+
+    public function getShowInterestRateAttribute()
+    {
+        return number_format($this->interest_rate, 2);
+    }
+
+    public function getMonthAttribute()
+    {
+        return date('m', strtotime($this->start_date));
+    }
+
+    public function getYearAttribute()
+    {
+        return date('Y', strtotime($this->start_date));
+    }
 }

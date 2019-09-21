@@ -13,6 +13,7 @@ class LoanCalculation
     private $totalMonth;
     private $month;
     private $year;
+    private $interestRatePerYear;
 
     public function __construct()
     {
@@ -40,19 +41,20 @@ class LoanCalculation
                     'loan_id' => $this->loan->id,
                 ]);
 
+                // increse month
                 $this->month += 1;
 
                 // check if end year
                 $this->checkEndYear();
 
-                $this->outstandingBalance = round($this->outstandingBalance - ($this->PMT - $tempInterest), 2);
+                $this->outstandingBalance = $this->outstandingBalance - ($this->PMT - $tempInterest);
             }
         }
     }
 
     private function getInterestAmount()
     {
-        return round(($this->loan->interest_rate / 12) * $this->outstandingBalance, 2);
+        return ($this->interestRatePerYear / 12) * $this->outstandingBalance;
     }
 
     private function checkEndYear()
@@ -67,17 +69,24 @@ class LoanCalculation
     private function prepareData()
     {
         $this->calculatePMT();
+        // set start Outstanding Balance
         $this->outstandingBalance = $this->loan->loan_amount;
+        // set total month
         $this->totalMonth = $this->loan->loan_term * 12;
+        // start month
         $this->month = date('m', strtotime($this->loan->start_date));
+        // start year
         $this->year = date('Y', strtotime($this->loan->start_date));
     }
 
     private function calculatePMT()
     {
+        // interest rate per year
+        $this->interestRatePerYear = $this->loan->interest_rate / 100;
+
         // PMT calculation
-        $this->PMT = ($this->loan->loan_amount * ($this->loan->interest_rate / 12)) / (1 - pow((1 + ($this->loan->interest_rate / 12)), (-12) * $this->loan->loan_term));
-        $this->PMT = round($this->PMT, 2);
+        $this->PMT = ($this->loan->loan_amount * ($this->interestRatePerYear / 12)) / (1 - pow((1 + ($this->interestRatePerYear / 12)), (-12) * $this->loan->loan_term));
+
     }
 
     private function hasLoan()

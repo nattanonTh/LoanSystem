@@ -11,8 +11,17 @@
 |
  */
 
+//  List
 Route::get('/', 'LoanController@index');
-Route::post('/create-new-loan', 'LoanController@store');
-Route::get('/create-new-loan', 'LoanController@create');
 
-Route::post('/loan-list', 'LoanController@list');
+// Details
+Route::get('/loan/{loan}', 'LoanController@show');
+
+// Edit
+Route::get('/loan/edit/{loan}', 'LoanController@edit');
+Route::post('/loan/edit/{loan}', 'LoanController@update');
+
+// Create
+Route::get('/create-new-loan', 'LoanController@create');
+Route::post('/create-new-loan', 'LoanController@store');
+

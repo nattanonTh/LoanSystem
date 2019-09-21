@@ -20,39 +20,48 @@
                     <th>Edit</th>
                 </tr>
             </thead>
+            <tbody>
+                @if (!empty($loans))
+                @foreach ($loans->all() as $loan)
+                <tr>
+                    <td>{{ $loan->id }}</td>
+                    <td>{{ $loan->showLoanAmount }} ฿</td>
+                    <td>{{ $loan->showLoanTerm }} Years</td>
+                    <td>{{ $loan->showInterestRate }}%</td>
+                    <td>{{ $loan->created_at }}</td>
+                    <td>{{ $loan->id }}</td>
+                </tr>
+                @endforeach
+                @endif
+            </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    $('#loan_list').DataTable({
-        searching: false,
-        info: false,
-        ajax: {
-            "url": "{{ url('loan-list') }}",
-            "type": "POST",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        },
-        lengthChange: false,
-        processing: true,
-        serverSide: true,
-        columns: [
-            { data: 'id', name: 'id' },
-            { data: 'loan_amount', name: 'loan_amount' },
-            { data: 'loan_term', name: 'loan_term' },
-            { data: 'interest_rate', name: 'interest_rate' },
-            { data: 'created_at', name: 'created_at' },
-            {
-                data: "id",
-                name: "id",
-                "render": function (data, type, row, meta) {
-                    return '<div class="btn-group"><button type="button" class="btn btn-primary">View</button><button type="button" class="btn btn-success">Edit</button><button type="button" class="btn btn-danger">Delete</button></div>'
+    $(function () {
+        $('#loan_list').DataTable({
+            searching: false,
+            info: false,
+            lengthChange: false,
+            "order": [[0, "desc"]],
+            columns: [
+                { data: 'id', name: 'id' },
+                { data: 'loan_amount', name: 'loan_amount' },
+                { data: 'loan_term', name: 'loan_term' },
+                { data: 'interest_rate', name: 'interest_rate' },
+                { data: 'created_at', name: 'created_at' },
+                {
+                    data: "id",
+                    name: "id",
+                    "render": function (data, type, row, meta) {
+                        return '<div class="btn-group"><a class="btn btn-primary" href="loan/' + data + '">View</a><a href="loan/edit/' + data + '" class="btn btn-success">Edit</a><a href="loan/delete/' + data + '"  class="btn btn-danger">Delete</a></div>'
+                    }
                 }
-            }
-        ],
+            ],
+        });
     });
+
 </script>
 
 @endsection
