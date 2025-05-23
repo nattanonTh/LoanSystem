@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  return-management-service
+  Sample SAM Template for the return management microservice.
+
+Parameters:
+  DynamoDBTableName:
+    Type: String
+    Default: return-requests-table
+    Description: Name of the DynamoDB table for storing return requests.
+  # PrimaryKeyFieldName:
+  #   Type: String
+  #   Default: return_id
+  #   Description: Name of the primary key field for the DynamoDB table.
+
+
+Globals:
+  Function:
+    Timeout: 10 # Default timeout for Lambda functions
+    MemorySize: 128 # Default memory size
+    Runtime: python3.9
+    Environment:
+      Variables:
+        DYNAMODB_TABLE_NAME: !Ref DynamoDBTableName
+        LOG_LEVEL: INFO
+    Architectures:
+      - x86_64 # Or arm64 if preferred
+
+Resources:
+  ReturnManagementFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: src/ # Points to the directory containing lambda_handler.py, return_service.py, database.py
+      Handler: lambda_handler.handler # File_name.handler_function_name
+      Policies:
+        # Give Create/Read/Update/Delete permissions to the DynamoDB table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDBTableName
+      Events:
+        CreateReturn:
+          Type: Api 
+          Properties:
+            Path: /returns
+            Method: post
+        GetReturnById:
+          Type: Api
+          Properties:
+            Path: /returns/{return_id}
+            Method: get
+        ListReturns: # Specific event for listing returns without path parameters
+          Type: Api
+          Properties:
+            Path: /returns
+            Method: get
+        UpdateReturn:
+          Type: Api
+          Properties:
+            Path: /returns/{return_id}
+            Method: put
+        # You can add more specific routes or use a catch-all {proxy+} if using a framework inside Lambda
+
+  # DynamoDB Table Definition (optional, can be managed outside this template)
+  # This basic definition is for convenience. For production, consider more specific settings,
+  # backup policies, Point-in-Time Recovery, GSI definitions, etc.
+  ReturnRequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableName
+      AttributeDefinitions:
+        - AttributeName: return_id # Primary key
+          AttributeType: S
+        # Add other AttributeDefinitions if they are part of KeySchema for table or GSIs
+        # For example, if you create GSIs in database.py's create_dynamodb_table_schema:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: created_at # For GSI sort key
+          AttributeType: N # Number for timestamp
+      KeySchema:
+        - AttributeName: return_id
+          KeyType: HASH
+      ProvisionedThroughput: # Or use BillingMode: PAY_PER_REQUEST
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      # GlobalSecondaryIndexes as defined in database.py's example create_dynamodb_table_schema
+      GlobalSecondaryIndexes:
+        - IndexName: UserIndex
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: created_at # Sort key for the GSI
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      # BillingMode: PAY_PER_REQUEST # Uncomment for on-demand capacity; remove ProvisionedThroughput
+
+Outputs:
+  ReturnManagementApi:
+    Description: "API Gateway endpoint URL for Prod stage for Return Management function"
+    Value: !Sub "https://\${ServerlessRestApi}.execute-api.\${AWS::Region}.amazonaws.com/Prod/returns"
+  ReturnManagementFunctionIamRole:
+    Description: "Implicit IAM Role created for Return Management function"
+    Value: !GetAtt ReturnManagementFunctionRole.Arn
+  DynamoDBReturnRequestsTableName:
+    Description: "DynamoDB table name for return requests"
+    Value: !Ref ReturnRequestsTable
